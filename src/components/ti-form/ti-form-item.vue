@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <div class="my-form-item">
       <!-- 显示label -->
       <label v-if="label">{{ label }}</label>
@@ -9,16 +8,17 @@
     </div>
 
     <!-- 显示错误信息 -->
-    <p v-if="error"
-       class="error">{{ error }}</p>
+    <p v-if="error" class="error">{{ error }}</p>
   </div>
 </template>
 
 <script>
 import Schema from "async-validator";
+import emitter from "../../mixins/emitter";
 export default {
   componentName: "ti-form-item",
   inject: ["form"],
+  mixins: [emitter],
   props: {
     label: {
       type: String,
@@ -29,28 +29,32 @@ export default {
       default: "",
     },
   },
-  data () {
+  data() {
     return {
       error: "",
     };
   },
-  mounted () {
+  mounted() {
     this.$on("validate", () => {
       this.validate();
     });
+    if (this.prop) {
+      this.dispatch("ti-form", "ti.form.addField", [this]);
+    }
   },
   methods: {
-    validate () {
+    validate() {
       // 当前表单项校验
       // element使用的是async-validator
       // 获取校验规则和当前数据
-      if (!this.prop) return
+      if (!this.prop) return;
       const rules = this.form.rules[this.prop];
       const value = this.form.model[this.prop];
       const validator = new Schema({ [this.prop]: rules });
       // 返回promise，全局可以统一处理
       return validator.validate({ [this.prop]: value }, (errors) => {
         // errors存在则校验失败
+        console.log("err", errors);
         if (errors) {
           this.error = errors[0].message;
         } else {

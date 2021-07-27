@@ -9,7 +9,7 @@ import emitter from "../../mixins/emitter";
 export default {
   componentName: "ti-form",
   mixins: [emitter],
-  provide () {
+  provide() {
     return {
       form: this,
     };
@@ -21,12 +21,25 @@ export default {
     },
     rules: Object,
   },
+  data() {
+    return {
+      fields: [],
+    };
+  },
+  created() {
+    this.$on("ti.form.addField", (field) => {
+      if (field) {
+        this.fields.push(field);
+      }
+    });
+  },
   methods: {
-    validate (cb) {
-      // const tasks = this.broadcast('ti-form-item','validate','')
-      const tasks = this.$children
-        .filter((item) => item.prop)
-        .map((item) => item.validate());
+    validate(cb) {
+      // const tasks = this.$children
+      //   .filter((item) => item.prop)
+      //   .map((item) => item.validate());
+
+      const tasks = this.fields.map((item) => item.validate());
 
       Promise.all(tasks)
         .then(() => cb(true))
